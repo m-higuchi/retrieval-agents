@@ -1,0 +1,10 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "indexer": "./src/retrieval_agents/indexers/document_indexer.py:graph",
+    "web_indexer": "./src/retrieval_agents/indexers/web_indexer.py:graph",
+    "simple_rag": "./src/retrieval_agents/agents/simple_rag.py:graph",
+    "adaptive_rag_graph": "./src/retrieval_agents/agents/adaptive_rag.py:graph"
+  },
+  "env": ".env"
+}

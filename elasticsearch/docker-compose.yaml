@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=changeme
+      - xpack.security.http.ssl.enabled=false
+      - xpack.license.self_generated.type=trial
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: curl -u elastic:changeme --silent http://localhost:9200 || exit 1
+      interval: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - elastic
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  init:
+    image: bash
+    container_name: init-token
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    entrypoint: [ "bash", "-c", "/scripts/init-token.sh" ]
+    volumes:
+      - ./scripts:/scripts:ro
+      - ./kibana.env:/output/kibana.env
+      - esdata:/usr/share/elasticsearch/data
+    environment:
+      - ELASTIC_PASSWORD=changeme
+    networks:
+      - elastic
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.1
+    container_name: kibana
+    env_file:
+      - kibana.env
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    depends_on:
+      - init
+    networks:
+      - elastic
+
+volumes:
+  esdata:
+
+networks:
+  elastic:
+    driver: bridge

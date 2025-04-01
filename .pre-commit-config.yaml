@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: "Make lint staged"
+        language: system
+        entry: make lint_staged
+        pass_filenames: false
+      - id: unit-test
+        name: "Make unit tests"
+        language: system
+        entry: make test
+        pass_filenames: false
