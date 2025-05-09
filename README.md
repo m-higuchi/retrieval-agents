@@ -1,5 +1,7 @@
 # Retrieval Agents
 
+[![CI](https://github.com/m-higuchi/retrieval-agents/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/m-higuchi/retrieval-agents/actions/workflows/unit-tests.yml)
+
 ## 概要
 
 このプロジェクトは、Retrieval-Augmented Generation (RAG) を活用した大規模言語モデル (LLM) のアプリケーション開発を目指す。RAGは、外部データソースを利用して生成するコンテンツの精度を高める技術であり、本プロジェクトでは、ユーザーの入力に基づいて関連する情報を検索し、その情報をもとにLLMが精緻な応答を生成するシステムを構築する。
