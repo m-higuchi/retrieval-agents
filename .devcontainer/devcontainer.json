@@ -42,7 +42,7 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-	"postCreateCommand": "pip install -e .[dev]",
+	"postCreateCommand": "poetry install --with dev --all-extras",
 	"postStartCommand": "ollama serve"
 
 	// Configure tool-specific properties.

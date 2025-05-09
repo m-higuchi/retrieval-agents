@@ -59,7 +59,7 @@ RAGの利点としては、次の点が挙げられる:
 4. アプリケーションおよび依存関係パッケージをインストールする。Dev Containerを使用している場合、この手順はコンテナ起動時に自動実行されるため不要。
 
     ```
-    pip install -e .[dev]
+    poetry install --with dev --all-extras
     ```
 
 ### デバッグと実行
