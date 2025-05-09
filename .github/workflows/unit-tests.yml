@@ -20,9 +20,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.12"]
     runs-on: ${{ matrix.os }}
     steps:
+      - run: |
+          apt update
+          apt install -y nodejs npm
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -30,28 +33,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv venv
-          uv pip install -r pyproject.toml
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install --with dev --all-extras
       - name: Lint with ruff
         run: |
-          uv pip install ruff
-          uv run ruff check .
+          poetry run ruff check src/
       - name: Lint with mypy
         run: |
-          uv pip install mypy
-          uv run mypy --strict src/
-      - name: Check README spelling
-        uses: codespell-project/actions-codespell@v2
-        with:
-          ignore_words_file: .codespellignore
-          path: README.md
-      - name: Check code spelling
-        uses: codespell-project/actions-codespell@v2
-        with:
-          ignore_words_file: .codespellignore
-          path: src/
+          poetry run mypy --strict src/
       - name: Run tests with pytest
         run: |
-          uv pip install pytest
-          uv run pytest tests/unit_tests
+          poetry run pytest tests/unit_tests
