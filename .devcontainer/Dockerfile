@@ -1,4 +1,4 @@
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -18,8 +18,9 @@ ENV POETRY_VERSION=2.1.3 \
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/nektos/act/master/install.sh | bash
 
-FROM python:3.12-slim
+FROM python:3.12-slim AS dev
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
@@ -36,3 +37,6 @@ COPY --from=builder /usr/bin/docker /usr/bin/docker
 COPY --from=builder /opt/poetry /opt/poetry
 COPY --from=builder /root/.docker/cli-plugins/docker-compose /root/.docker/cli-plugins/docker-compose
 COPY --from=builder /usr/local/bin/ollama /usr/local/bin/ollama
+COPY --from=builder /usr/bin/act /usr/bin/act
+
+
