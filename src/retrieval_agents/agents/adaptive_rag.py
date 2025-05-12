@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from retrieval_agents.agents import retrieval
 from retrieval_agents.agents.configurations import ARagConfiguration
-from retrieval_agents.agents.states import AdaptiveRagInputState, ARagState
+from retrieval_agents.agents.states import AdaptiveRagInputState, AdaptiveRagState
 from retrieval_agents.agents.utils import load_chat_model
 
 logger = logging.getLogger("adaptive_rag")
@@ -60,7 +60,7 @@ class GradeDocuments(BaseModel):
 
 ### Nodes ###
 async def retrieve(
-    state: ARagState, *, config: RunnableConfig
+    state: AdaptiveRagState, *, config: RunnableConfig
 ) -> dict[str, str | Sequence[Document]]:
     """Retrieve documents.
 
@@ -82,7 +82,7 @@ async def retrieve(
 
 
 async def grade_documents(
-    state: ARagState, *, config: RunnableConfig
+    state: AdaptiveRagState, *, config: RunnableConfig
 ) -> dict[str, str | Sequence[Document]]:
     """Determine whether the retrieved documents are relevant to the question.
 
@@ -132,7 +132,7 @@ async def grade_documents(
 
 
 async def generate(
-    state: ARagState, *, config: RunnableConfig
+    state: AdaptiveRagState, *, config: RunnableConfig
 ) -> dict[str, str | int | Sequence[Document]]:
     """Generate answer.
 
@@ -165,7 +165,7 @@ async def generate(
 
 
 async def web_search(
-    state: ARagState, *, config: RunnableConfig
+    state: AdaptiveRagState, *, config: RunnableConfig
 ) -> dict[str, str | Sequence[Document]]:
     """Web search based on the re-phrased question.
 
@@ -188,7 +188,7 @@ async def web_search(
 
 
 async def transform_query(
-    state: ARagState, *, config: RunnableConfig
+    state: AdaptiveRagState, *, config: RunnableConfig
 ) -> dict[str, str | Sequence[Document]]:
     """Transform the query to produce a better question.
 
@@ -218,7 +218,7 @@ async def transform_query(
 ### Edges ###
 
 
-async def route_question(state: ARagState, *, config: RunnableConfig) -> str:
+async def route_question(state: AdaptiveRagState, *, config: RunnableConfig) -> str:
     """Route question to web search or RAG.
 
     Args:
@@ -252,7 +252,7 @@ async def route_question(state: ARagState, *, config: RunnableConfig) -> str:
         return "web_search"
 
 
-def decide_to_generate(state: ARagState) -> str:
+def decide_to_generate(state: AdaptiveRagState) -> str:
     """Determine whether to generate an answer, or re-generate a question.
 
     Args:
@@ -277,7 +277,7 @@ def decide_to_generate(state: ARagState) -> str:
 
 
 async def grade_generation_v_documents_and_question(
-    state: ARagState, *, config: RunnableConfig
+    state: AdaptiveRagState, *, config: RunnableConfig
 ) -> str:
     """Determine whether the generation is grounded in the document and answers question.
 
@@ -318,7 +318,7 @@ async def grade_generation_v_documents_and_question(
 
 
 async def _grade_generation_v_documents_and_question_hallucination(
-    state: ARagState, configuration: ARagConfiguration
+    state: AdaptiveRagState, configuration: ARagConfiguration
 ) -> bool:
     documents = state.documents
     generation = state.generation
@@ -353,7 +353,7 @@ async def _grade_generation_v_documents_and_question_hallucination(
 
 
 async def _grade_generation_v_docuemnts_and_question_answer(
-    state: ARagState, configuration: ARagConfiguration
+    state: AdaptiveRagState, configuration: ARagConfiguration
 ) -> bool:
     question = state.question
     generation = state.generation
@@ -383,7 +383,7 @@ async def _grade_generation_v_docuemnts_and_question_answer(
 graph_name = "AdaptiveRAGGaph"
 logger.info(f"Building {graph_name}")
 builder = StateGraph(
-    ARagState, input=AdaptiveRagInputState, config_schema=ARagConfiguration
+    AdaptiveRagState, input=AdaptiveRagInputState, config_schema=ARagConfiguration
 )
 
 builder.add_node(web_search)

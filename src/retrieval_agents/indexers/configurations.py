@@ -7,6 +7,8 @@ from typing import Annotated, Any, Literal, Optional, Type, TypeVar
 
 from langchain_core.runnables import RunnableConfig, ensure_config
 
+__all__ = ["RunnableConfig"]
+
 
 @dataclass(kw_only=True)
 class IndexConfiguration:

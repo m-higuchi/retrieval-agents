@@ -3,20 +3,22 @@ from langchain_core.documents import Document
 from pytest import fixture, mark
 
 from retrieval_agents.agents import adaptive_rag
-from retrieval_agents.agents.configuration import RunnableConfig
-from retrieval_agents.agents.state import ARagState
+from retrieval_agents.agents.states import AdaptiveRagState
+from retrieval_agents.indexers.configurations import RunnableConfig
 
 
 @fixture
-def runnable_config():
+def runnable_config() -> RunnableConfig:
     return RunnableConfig(
-        user_id="test_user",
-        hallucination_grader_model="ollama/llama3.2:3b-instruct-fp16",
-        answer_grader_model="ollama/llama3.2:3b-instruct-fp16",
+        configurable={
+            "user_id": "test_user",
+            "hallucination_grader_model": "ollama/llama3.2:3b-instruct-fp16",
+            "answer_grader_model": "ollama/llama3.2:3b-instruct-fp16",
+        }
     )
 
 
-async def test_generate(runnable_config):
+async def test_generate(runnable_config: RunnableConfig) -> None:
     # response = await adaptive_rag.generate(runnable_config)
 
     # question = "What is the elevation of Mount Fuji?"
@@ -32,7 +34,7 @@ async def test_generate(runnable_config):
 @mark.asyncio
 async def tests_grade_generation_v_documents_and_question(
     runnable_config: RunnableConfig,
-):
+) -> None:
     generation = "The elevation of Mount Fuji is 3,776 meters."
     documents = [
         Document(
@@ -40,7 +42,7 @@ async def tests_grade_generation_v_documents_and_question(
             page_content="Mount Fuji is the tallest mountain in Japan, with an elevation of 3,776 meters.",
         )
     ]
-    state = ARagState(
+    state = AdaptiveRagState(
         question="What is the elevation of Mount Fuji?",
         generation=generation,
         documents=documents,
