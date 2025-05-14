@@ -154,8 +154,6 @@ async def generate(
     # RAG generation
     generation = await rag_chain.ainvoke({"context": documents, "question": question})
 
-    state.generation = generation
-    state.generation_count = state.generation_count + 1
     return {
         "documents": documents,
         "question": question,

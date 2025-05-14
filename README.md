@@ -1,6 +1,6 @@
 # Retrieval Agents
 
-[![CI](https://github.com/m-higuchi/retrieval-agents/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/m-higuchi/retrieval-agents/actions/workflows/unit-tests.yml)
+[![CI](https://github.com/m-higuchi/retrieval-agents/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/m-higuchi/retrieval-agents/actions/workflows/unit-tests.yml) [![Integration Tests](https://github.com/m-higuchi/retrieval-agents/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/m-higuchi/retrieval-agents/actions/workflows/integration-tests.yml)
 
 ## 概要
 
