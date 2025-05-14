@@ -112,7 +112,7 @@ class AdaptiveRagInputState(BaseModel):
     question: str = Field()
 
 
-class ARagState(AdaptiveRagInputState):
+class AdaptiveRagState(AdaptiveRagInputState):
     """The state of the adaptive RAG agent."""
 
     documents: Annotated[Sequence[Document], reduce_docs]

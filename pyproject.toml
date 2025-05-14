@@ -18,6 +18,7 @@ dependencies = [
 packages = [
   { include = "retrieval_agents", from = "src" }
 ]
+include = ["src/retrieval_agents/py.typed"]
 
 [project.optional-dependencies]
 openai = ["langchain-openai>0.1.22"]
