@@ -16,10 +16,19 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel
 
-from retrieval_agents.agents import retrieval
-from retrieval_agents.agents.configurations import RagConfiguration
-from retrieval_agents.agents.states import InputState, State
-from retrieval_agents.agents.utils import format_docs, get_message_text, load_chat_model
+from retrieval_agents.workflows import retrieval
+from retrieval_agents.workflows.rag._simple_rag.simple_rag_configuration import (
+    SimpleRagConfiguration,
+)
+from retrieval_agents.workflows.rag._simple_rag.simple_rag_state import (
+    SimpleRagInputState,
+    SimpleRagState,
+)
+from retrieval_agents.workflows.utils import (
+    format_docs,
+    get_message_text,
+    load_chat_model,
+)
 
 # Define the function that calls the model
 
@@ -31,7 +40,7 @@ class SearchQuery(BaseModel):
 
 
 async def generate_query(
-    state: State, *, config: RunnableConfig
+    state: SimpleRagState, *, config: RunnableConfig
 ) -> dict[str, list[str]]:
     """Generate a search query based on the current state and configuration.
 
@@ -57,7 +66,7 @@ async def generate_query(
         human_input = get_message_text(messages[-1])
         return {"queries": [human_input]}
     else:
-        configuration = RagConfiguration.from_runnable_config(config)
+        configuration = SimpleRagConfiguration.from_runnable_config(config)
         # Feel free to customize the prompt, model, and other logic!
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -84,7 +93,7 @@ async def generate_query(
 
 
 async def retrieve(
-    state: State, *, config: RunnableConfig
+    state: SimpleRagState, *, config: RunnableConfig
 ) -> dict[str, list[Document]]:
     """Retrieve documents based on the latest query in the state.
 
@@ -106,10 +115,10 @@ async def retrieve(
 
 
 async def respond(
-    state: State, *, config: RunnableConfig
+    state: SimpleRagState, *, config: RunnableConfig
 ) -> dict[str, list[BaseMessage]]:
     """Call the LLM powering our "agent"."""
-    configuration = RagConfiguration.from_runnable_config(config)
+    configuration = SimpleRagConfiguration.from_runnable_config(config)
     # Feel free to customize the prompt, model, and other logic!
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -136,7 +145,9 @@ async def respond(
 # Define a new graph (It's just a pipe)
 
 
-builder = StateGraph(State, input=InputState, config_schema=RagConfiguration)
+builder = StateGraph(
+    SimpleRagState, input=SimpleRagInputState, config_schema=SimpleRagConfiguration
+)
 
 builder.add_node(generate_query)
 builder.add_node(retrieve)

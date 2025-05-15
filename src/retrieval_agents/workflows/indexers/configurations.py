@@ -7,11 +7,9 @@ from typing import Annotated, Any, Literal, Optional, Type, TypeVar
 
 from langchain_core.runnables import RunnableConfig, ensure_config
 
-__all__ = ["RunnableConfig"]
-
 
 @dataclass(kw_only=True)
-class IndexConfiguration:
+class IndexerConfiguration:
     """Configuration class for indexing and retrieval operations.
 
     This class defines the parameters needed for configuring the indexing and
@@ -70,4 +68,4 @@ class IndexConfiguration:
         return cls(**{k: v for k, v in configurable.items() if k in _fields})
 
 
-T = TypeVar("T", bound=IndexConfiguration)
+T = TypeVar("T", bound=IndexerConfiguration)

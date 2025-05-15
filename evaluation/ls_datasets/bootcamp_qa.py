@@ -1,7 +1,9 @@
+# noqa: D100
+from langchain_core.documents import Document
 from langsmith.schemas import Dataset
 
 
-def create_dataset() -> Dataset:
+def create_dataset() -> Dataset:  # noqa: D103
     import langsmith
 
     client = langsmith.Client()
@@ -10,15 +12,12 @@ def create_dataset() -> Dataset:
     )
 
 
-def get_source_documents(metadata):
+def get_source_documents(metadata) -> list[Document]:  # type: ignore[no-untyped-def]  # noqa: D103
     import io
     import os
     import zipfile
 
     import requests
-
-    # from langchain_community.document_loaders import TextLoader
-    from langchain_core.documents import Document
 
     # Fetch the source documents
     url = "https://storage.googleapis.com/benchmarks-artifacts/basecamp-data/basecamp-data.zip"

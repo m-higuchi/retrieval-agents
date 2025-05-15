@@ -4,7 +4,7 @@ import pytest
 from langchain_core.runnables import RunnableConfig
 from langsmith import expect, unit
 
-from retrieval_agents.agents import indexer_graph, simple_rag
+from retrieval_agents import document_indexer, simple_rag
 
 
 @pytest.mark.asyncio
@@ -18,7 +18,7 @@ async def test_simple_rag() -> None:
         configurable={"user_id": user_id, "retriever_provider": "chroma"}
     )
 
-    result = await indexer_graph.ainvoke({"docs": simple_doc}, config)
+    result = await document_indexer.ainvoke({"docs": simple_doc}, config)
     expect(result["docs"]).against(lambda x: not x)  # we delete after the end
 
     res = await simple_rag.ainvoke(

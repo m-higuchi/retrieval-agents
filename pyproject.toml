@@ -41,6 +41,7 @@ ipykernel = ">=6.29.5"
 pytest-cov = ">=6.1.1"
 pre-commit = ">=4.2.0"
 codespell = ">=2.4.1"
+ragas = "^0.2.15"
 
 [build-system]
 requires = ["poetry-core"]
@@ -74,3 +75,7 @@ convention = "google"
 builtin = "clear,rare,code,names"
 skip    = ".mypy_cache,.pytest_cache,.ruff_cache,htmlcov,retrieval_agents.egg-info,.coverage,.env,*.ipynb,*.log"
 ignore-words = ".codespellignore"
+
+[tool.mypy]
+explicit_package_bases = true
+files = ["src", "tests", "evaluation"]

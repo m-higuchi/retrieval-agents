@@ -27,9 +27,7 @@ from langchain_core.messages import AnyMessage
 from langgraph.graph import add_messages
 from pydantic import BaseModel, Field
 
-from retrieval_agents.indexers.states import reduce_docs
-
-logger = logging.getLogger("states")
+logger = logging.getLogger("simple_rag_state")
 
 ############################# Simple RAG Agent State  ###################################
 
@@ -37,7 +35,7 @@ logger = logging.getLogger("states")
 # Optional, the InputState is a restricted version of the State that is used to
 # define a narrower interface to the outside world vs. what is maintained
 # internally.
-class InputState(BaseModel):
+class SimpleRagInputState(BaseModel):
     """Represents the input state for the agent.
 
     This class defines the structure of the input state, which includes
@@ -93,7 +91,7 @@ def add_queries(existing: Sequence[str], new: Sequence[str]) -> Sequence[str]:
     return list(existing) + list(new)
 
 
-class State(InputState):
+class SimpleRagState(SimpleRagInputState):
     """The state of your graph / agent."""
 
     queries: Annotated[list[str], add_queries] = Field(default_factory=list)
@@ -101,20 +99,3 @@ class State(InputState):
 
     retrieved_docs: list[Document] = Field(default_factory=list)
     """Populated by the retriever. This is a list of documents that the agent can reference."""
-
-
-#############################  Adaptive RAG Agent State  ###################################
-
-
-class AdaptiveRagInputState(BaseModel):
-    """Input state for adaptive rag."""
-
-    question: str = Field()
-
-
-class AdaptiveRagState(AdaptiveRagInputState):
-    """The state of the adaptive RAG agent."""
-
-    documents: Annotated[Sequence[Document], reduce_docs]
-    generation: str = Field(default="")
-    generation_count: int = Field(default=0)
