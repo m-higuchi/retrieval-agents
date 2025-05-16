@@ -19,7 +19,8 @@ if TYPE_CHECKING:
     from langchain_core.runnables import RunnableConfig
     from langchain_core.vectorstores import VectorStoreRetriever
 
-    from .indexers import IndexerConfiguration
+    from retrieval_agents.workflows import IndexerConfiguration
+
     from .rag import SimpleRagConfiguration
 
 ## Encoder constructors
@@ -137,7 +138,7 @@ def make_retriever(
     config: RunnableConfig,
 ) -> Generator[VectorStoreRetriever, None, None]:
     """Create a retriever for the agent, based on the current configuration."""
-    from .indexers import IndexerConfiguration
+    from retrieval_agents.workflows import IndexerConfiguration
 
     configuration = IndexerConfiguration.from_runnable_config(config)
     embedding_model = make_text_encoder(configuration.embedding_model)

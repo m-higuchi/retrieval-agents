@@ -27,9 +27,9 @@ For detailed configuration options and usage instructions, refer to the Configur
 and individual component documentation within the retrieval_graph package.
 """  # noqa
 
+from .configurations import IndexerConfiguration
 from .indexers import (
     DocumentIndexerState,
-    IndexerConfiguration,
     UrlInputState,
     document_indexer,
     web_indexer,

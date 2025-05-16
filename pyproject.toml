@@ -78,4 +78,5 @@ ignore-words = ".codespellignore"
 
 [tool.mypy]
 explicit_package_bases = true
+mypy_path = "src"
 files = ["src", "tests", "evaluation"]

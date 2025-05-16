@@ -6,10 +6,10 @@ from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 
+from retrieval_agents.workflows import IndexerConfiguration
 from retrieval_agents.workflows.indexers._document_indexer.document_indexer_state import (
     DocumentIndexerState,
 )
-from retrieval_agents.workflows.indexers.configurations import IndexerConfiguration
 from retrieval_agents.workflows.retrieval import make_retriever
 
 
