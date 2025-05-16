@@ -5,9 +5,11 @@ from pathlib import Path
 from langchain_core.documents import Document
 from pytest import FixtureRequest, fixture, mark
 
-from retrieval_agents.agents import adaptive_rag
-from retrieval_agents.agents.states import AdaptiveRagState
-from retrieval_agents.indexers.configurations import RunnableConfig
+from retrieval_agents import RunnableConfig
+from retrieval_agents.workflows.rag._adaptive_rag import adaptive_rag_graph
+from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_state import (
+    AdaptiveRagState,
+)
 
 
 @fixture(params=["ollama", "openai", "anthropic"])
@@ -31,7 +33,7 @@ async def test_web_search(runnable_config: RunnableConfig) -> None:
         question="What is the elevation of Mount Fuji?",
         documents=[],
     )
-    result = await adaptive_rag.web_search(state, config=runnable_config)
+    result = await adaptive_rag_graph.web_search(state, config=runnable_config)
     assert result["documents"] != []
 
 
@@ -45,7 +47,7 @@ async def test_grade_documents(runnable_config: RunnableConfig) -> None:
             )
         ],
     )
-    result = await adaptive_rag.grade_documents(state, config=runnable_config)
+    result = await adaptive_rag_graph.grade_documents(state, config=runnable_config)
     assert result["question"] == state.question
     assert result["documents"] == state.documents or result["documents"] == []
 
@@ -60,7 +62,7 @@ async def test_transform_query(runnable_config: RunnableConfig) -> None:
             )
         ],
     )
-    result = await adaptive_rag.transform_query(state, config=runnable_config)
+    result = await adaptive_rag_graph.transform_query(state, config=runnable_config)
     assert result["question"] != state.question
     assert result["documents"] == state.documents
 
@@ -75,7 +77,7 @@ async def test_generate(runnable_config: RunnableConfig) -> None:
             )
         ],
     )
-    result = await adaptive_rag.generate(state, config=runnable_config)
+    result = await adaptive_rag_graph.generate(state, config=runnable_config)
 
     assert result["generation"] != ""
 
@@ -94,7 +96,7 @@ async def tests_grade_generation_v_documents_and_question(
             )
         ],
     )
-    response = await adaptive_rag.grade_generation_v_documents_and_question(
+    response = await adaptive_rag_graph.grade_generation_v_documents_and_question(
         state=state, config=runnable_config
     )
     assert response == "useful"

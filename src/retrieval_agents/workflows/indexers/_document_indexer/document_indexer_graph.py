@@ -6,9 +6,11 @@ from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 
-from retrieval_agents.agents import retrieval
-from retrieval_agents.indexers.configurations import IndexConfiguration
-from retrieval_agents.indexers.states import IndexState
+from retrieval_agents.workflows.indexers._document_indexer.document_indexer_state import (
+    DocumentIndexerState,
+)
+from retrieval_agents.workflows.indexers.configurations import IndexerConfiguration
+from retrieval_agents.workflows.retrieval import make_retriever
 
 
 def ensure_docs_have_user_id(
@@ -33,7 +35,7 @@ def ensure_docs_have_user_id(
 
 
 async def index_docs(
-    state: IndexState, *, config: Optional[RunnableConfig] = None
+    state: DocumentIndexerState, *, config: Optional[RunnableConfig] = None
 ) -> dict[str, str]:
     """Asynchronously index documents in the given state using the configured retriever.
 
@@ -47,7 +49,8 @@ async def index_docs(
     """
     if not config:
         raise ValueError("Configuration required to run index_docs.")
-    with retrieval.make_retriever(config) as retriever:
+
+    with make_retriever(config) as retriever:
         stamped_docs = ensure_docs_have_user_id(state.docs, config)
 
         await retriever.aadd_documents(stamped_docs)
@@ -57,7 +60,7 @@ async def index_docs(
 # Define a new graph
 
 
-builder = StateGraph(IndexState, config_schema=IndexConfiguration)
+builder = StateGraph(DocumentIndexerState, config_schema=IndexerConfiguration)
 builder.add_node(index_docs)
 builder.add_edge(START, "index_docs")
 builder.add_edge("index_docs", END)

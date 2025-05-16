@@ -11,12 +11,17 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel, Field
 
-from retrieval_agents.agents import retrieval
-from retrieval_agents.agents.configurations import ARagConfiguration
-from retrieval_agents.agents.states import AdaptiveRagInputState, AdaptiveRagState
-from retrieval_agents.agents.utils import load_chat_model
+from retrieval_agents.workflows import retrieval
+from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_configuration import (
+    AdaptiveRagConfiguration,
+)
+from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_state import (
+    AdaptiveRagInputState,
+    AdaptiveRagState,
+)
+from retrieval_agents.workflows.utils import load_chat_model
 
-logger = logging.getLogger("adaptive_rag")
+logger = logging.getLogger("adaptive_rag_graph")
 
 
 class SearchQuery(BaseModel):
@@ -92,7 +97,7 @@ async def grade_documents(
     Returns:
         state (dict): Updates documents key with only filtered relevant documents
     """
-    configuration = ARagConfiguration.from_runnable_config(config)
+    configuration = AdaptiveRagConfiguration.from_runnable_config(config)
     question = state.question
     documents = state.documents
 
@@ -142,7 +147,7 @@ async def generate(
     Returns:
         state (dict): New key added to state, generation, that contains LLM generation
     """
-    configuration = ARagConfiguration.from_runnable_config(config)
+    configuration = AdaptiveRagConfiguration.from_runnable_config(config)
 
     question = state.question
     documents = state.documents
@@ -198,7 +203,7 @@ async def transform_query(
     """
     question = state.question
     documents = state.documents
-    configuration = ARagConfiguration.from_runnable_config(config)
+    configuration = AdaptiveRagConfiguration.from_runnable_config(config)
     re_write_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", configuration.rewrite_system_prompt),
@@ -225,7 +230,7 @@ async def route_question(state: AdaptiveRagState, *, config: RunnableConfig) -> 
     Returns:
         str: Next node to call
     """
-    configuration = ARagConfiguration.from_runnable_config(config)
+    configuration = AdaptiveRagConfiguration.from_runnable_config(config)
     llm = load_chat_model(configuration.router_model)
     structured_llm_router = llm.with_structured_output(RouteQuery.model_json_schema())
     route_prompt = ChatPromptTemplate.from_messages(
@@ -285,7 +290,7 @@ async def grade_generation_v_documents_and_question(
     Returns:
         str: Decision for next node to call
     """
-    configuration = ARagConfiguration.from_runnable_config(config)
+    configuration = AdaptiveRagConfiguration.from_runnable_config(config)
     grade_hallucination = (
         await _grade_generation_v_documents_and_question_hallucination(
             state=state, configuration=configuration
@@ -316,7 +321,7 @@ async def grade_generation_v_documents_and_question(
 
 
 async def _grade_generation_v_documents_and_question_hallucination(
-    state: AdaptiveRagState, configuration: ARagConfiguration
+    state: AdaptiveRagState, configuration: AdaptiveRagConfiguration
 ) -> bool:
     documents = state.documents
     generation = state.generation
@@ -351,7 +356,7 @@ async def _grade_generation_v_documents_and_question_hallucination(
 
 
 async def _grade_generation_v_docuemnts_and_question_answer(
-    state: AdaptiveRagState, configuration: ARagConfiguration
+    state: AdaptiveRagState, configuration: AdaptiveRagConfiguration
 ) -> bool:
     question = state.question
     generation = state.generation
@@ -381,7 +386,9 @@ async def _grade_generation_v_docuemnts_and_question_answer(
 graph_name = "AdaptiveRAGGaph"
 logger.info(f"Building {graph_name}")
 builder = StateGraph(
-    AdaptiveRagState, input=AdaptiveRagInputState, config_schema=ARagConfiguration
+    AdaptiveRagState,
+    input=AdaptiveRagInputState,
+    config_schema=AdaptiveRagConfiguration,
 )
 
 builder.add_node(web_search)
@@ -400,6 +407,7 @@ builder.add_conditional_edges(
 )
 builder.add_edge("web_search", "generate")
 builder.add_edge("retrieve", "grade_documents")
+builder.add_edge("transform_query", "retrieve")
 builder.add_conditional_edges(
     "grade_documents",
     decide_to_generate,
@@ -408,11 +416,16 @@ builder.add_conditional_edges(
         "generate": "generate",
     },
 )
-builder.add_edge("transform_query", "retrieve")
+
 builder.add_conditional_edges(
     "generate",
     grade_generation_v_documents_and_question,
-    {"not supported": "generate", "useful": END, "not useful": "transform_query"},
+    {
+        "not supported": "generate",
+        "useful": END,
+        "end": END,
+        "not useful": "transform_query",
+    },
 )
 
 graph: CompiledStateGraph = builder.compile(

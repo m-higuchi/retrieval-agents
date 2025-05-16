@@ -4,9 +4,22 @@ import pytest
 from langchain_core.documents import Document
 from pytest import fixture, mark
 
-from retrieval_agents.agents import adaptive_rag
-from retrieval_agents.agents.states import AdaptiveRagState
-from retrieval_agents.indexers.configurations import RunnableConfig
+from retrieval_agents import RunnableConfig
+from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph import (
+    _grade_generation_v_docuemnts_and_question_answer,
+    _grade_generation_v_documents_and_question_hallucination,
+    decide_to_generate,
+    generate,
+    grade_documents,
+    grade_generation_v_documents_and_question,
+    retrieve,
+    route_question,
+    transform_query,
+    web_search,
+)
+from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_state import (
+    AdaptiveRagState,
+)
 
 
 @fixture
@@ -29,7 +42,9 @@ def mock_chat_model() -> MagicMock:
 
 ### Nodes ###
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.retrieval.make_retriever")
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.retrieval.make_retriever"
+)
 async def test_retrieve(
     mock_make_retriever: MagicMock, runnable_config: RunnableConfig
 ) -> None:
@@ -39,13 +54,17 @@ async def test_retrieve(
     mock_make_retriever.return_value.__enter__.return_value = mock_retriever
 
     state = AdaptiveRagState(question="agent memory", documents=[])
-    result = await adaptive_rag.retrieve(state=state, config=runnable_config)
+    result = await retrieve(state=state, config=runnable_config)
     assert result["documents"] == "retrieved docs"
 
 
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.ChatPromptTemplate")
-@patch("retrieval_agents.agents.adaptive_rag.load_chat_model")
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+)
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
+)
 async def test_grade_documents(
     mock_load_chat_model: MagicMock,
     mock_prompt_cls: MagicMock,
@@ -81,14 +100,18 @@ async def test_grade_documents(
             Document(page_content="irrelevant"),
         ],
     )
-    result = await adaptive_rag.grade_documents(state=state, config=runnable_config)
+    result = await grade_documents(state=state, config=runnable_config)
     assert result["question"] == state.question
     assert result["documents"] == [Document(page_content="relevant")]
 
 
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.ChatPromptTemplate")
-@patch("retrieval_agents.agents.adaptive_rag.load_chat_model")
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+)
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
+)
 async def test_generate(
     mock_load_chat_model: MagicMock,
     mock_prompt_cls: MagicMock,
@@ -102,7 +125,7 @@ async def test_generate(
     mock_prompt = MagicMock()
     mock_prompt.__or__.return_value.__or__.return_value = mock_rag_chain
     mock_prompt_cls.from_messages.return_value = mock_prompt
-    response = await adaptive_rag.generate(
+    response = await generate(
         state=AdaptiveRagState(question="agent memory", documents=[]),
         config=runnable_config,
     )
@@ -123,7 +146,7 @@ async def test_web_search(
 
     mock_tavily_search_results.return_value = mock_web_search_tool
 
-    response = await adaptive_rag.web_search(
+    response = await web_search(
         state=AdaptiveRagState(question="agent memory", documents=[]),
         config=runnable_config,
     )
@@ -134,8 +157,12 @@ async def test_web_search(
 
 
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.ChatPromptTemplate")
-@patch("retrieval_agents.agents.adaptive_rag.load_chat_model")
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+)
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
+)
 async def test_transform_query(
     mock_load_chat_model: MagicMock,
     mock_prompt_cls: MagicMock,
@@ -150,7 +177,7 @@ async def test_transform_query(
     mock_re_write_prompt.__or__.return_value.__or__.return_value = mock_question_rewrite
 
     mock_prompt_cls.from_messages.return_value = mock_re_write_prompt
-    response = await adaptive_rag.transform_query(
+    response = await transform_query(
         state=AdaptiveRagState(question="agent memory", documents=[]),
         config=runnable_config,
     )
@@ -160,8 +187,12 @@ async def test_transform_query(
 
 ### Edges ###
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.ChatPromptTemplate")
-@patch("retrieval_agents.agents.adaptive_rag.load_chat_model")
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+)
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
+)
 @mark.parametrize(
     "relevance, expected",
     [("vectorstore", "vectorstore"), ("web_search", "web_search")],
@@ -188,7 +219,7 @@ async def test_route_question_rag(
     mock_prompt.__or__.return_value = mock_question_router
     mock_prompt_cls.from_messages.return_value = mock_prompt
 
-    result = await adaptive_rag.route_question(
+    result = await route_question(
         state=AdaptiveRagState(question="agent memory", documents=[]),
         config={"configurable": {"user_id": "test_usser", "topics": "test topics"}},
     )
@@ -204,7 +235,7 @@ async def test_route_question_rag(
     [([], "transform_query"), ([Document(page_content="")], "generate")],
 )
 async def test_decide_to_generate(documents: list[Document], expected: str) -> None:
-    result = adaptive_rag.decide_to_generate(
+    result = decide_to_generate(
         state=AdaptiveRagState(question="agent memory", documents=documents)
     )
     assert result == expected
@@ -212,11 +243,11 @@ async def test_decide_to_generate(documents: list[Document], expected: str) -> N
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.agents.adaptive_rag._grade_generation_v_documents_and_question_hallucination",
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph._grade_generation_v_documents_and_question_hallucination",
     new_callable=AsyncMock,
 )
 @patch(
-    "retrieval_agents.agents.adaptive_rag._grade_generation_v_docuemnts_and_question_answer",
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph._grade_generation_v_docuemnts_and_question_answer",
     new_callable=AsyncMock,
 )
 @mark.parametrize(
@@ -246,7 +277,7 @@ async def test_grade_generation_v_documents_and_question(
     mock_grade_generation_v_documents_and_question_hallucination.return_value = (
         hallucination_grade
     )
-    response = await adaptive_rag.grade_generation_v_documents_and_question(
+    response = await grade_generation_v_documents_and_question(
         state=AdaptiveRagState(
             question="", documents=[], generation_count=generation_count
         ),
@@ -256,8 +287,13 @@ async def test_grade_generation_v_documents_and_question(
 
 
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.ChatPromptTemplate")
-@patch("retrieval_agents.agents.adaptive_rag.load_chat_model", return_value=MagicMock())
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+)
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model",
+    return_value=MagicMock(),
+)
 @mark.parametrize("binary_score, expected", [("yes", True), ("No", False)])
 async def test_grade_generation_v_documents_and_question_hallucination(
     mock_load_chat_model: MagicMock,
@@ -283,17 +319,20 @@ async def test_grade_generation_v_documents_and_question_hallucination(
             "parsing_error": "parsing_error_expected",
         }
     )
-    response = (
-        await adaptive_rag._grade_generation_v_documents_and_question_hallucination(
-            state=AdaptiveRagState(question="", documents=[]), configuration=MagicMock()
-        )
+    response = await _grade_generation_v_documents_and_question_hallucination(
+        state=AdaptiveRagState(question="", documents=[]), configuration=MagicMock()
     )
     assert response == expected
 
 
 @mark.asyncio
-@patch("retrieval_agents.agents.adaptive_rag.ChatPromptTemplate")
-@patch("retrieval_agents.agents.adaptive_rag.load_chat_model", return_value=MagicMock())
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+)
+@patch(
+    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model",
+    return_value=MagicMock(),
+)
 @mark.parametrize("binary_score, expected", [("yes", True), ("no", False)])
 async def test_grade_generation_v_docuemnts_and_question_answer(
     mock_load_chat_model: MagicMock,
@@ -313,7 +352,7 @@ async def test_grade_generation_v_docuemnts_and_question_answer(
 
     mock_prompt_cls.from_messages.return_value = mock_answer_prompt
     answer_grader.ainvoke = AsyncMock(return_value={"binary_score": binary_score})
-    response = await adaptive_rag._grade_generation_v_docuemnts_and_question_answer(
+    response = await _grade_generation_v_docuemnts_and_question_answer(
         state=AdaptiveRagState(question="", documents=[]), configuration=MagicMock()
     )
     assert response == expected

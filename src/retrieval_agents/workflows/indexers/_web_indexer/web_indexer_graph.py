@@ -9,9 +9,12 @@ from langchain_core.runnables import RunnableConfig
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import END, START, StateGraph
 
-from retrieval_agents.agents import retrieval
-from retrieval_agents.indexers.configurations import IndexConfiguration
-from retrieval_agents.indexers.states import UrlInputState, WebIndexState
+from retrieval_agents.workflows import retrieval
+from retrieval_agents.workflows.indexers._web_indexer.web_indexer_state import (
+    UrlInputState,
+    WebIndexerState,
+)
+from retrieval_agents.workflows.indexers.configurations import IndexerConfiguration
 
 logger = logging.getLogger("web_indexer")
 
@@ -38,7 +41,7 @@ def ensure_docs_have_user_id(
 
 
 async def load_web(
-    state: WebIndexState, *, config: Optional[RunnableConfig] = None
+    state: WebIndexerState, *, config: Optional[RunnableConfig] = None
 ) -> dict[str, list[Document]]:
     """Load from the web sites.
 
@@ -56,8 +59,8 @@ async def load_web(
 
 
 async def split_text(
-    state: WebIndexState, *, config: Optional[RunnableConfig] = None
-) -> WebIndexState:
+    state: WebIndexerState, *, config: Optional[RunnableConfig] = None
+) -> WebIndexerState:
     """Split documents.
 
     Args:
@@ -76,7 +79,7 @@ async def split_text(
 
 
 async def index_docs(
-    state: WebIndexState, *, config: Optional[RunnableConfig] = None
+    state: WebIndexerState, *, config: Optional[RunnableConfig] = None
 ) -> dict[str, str]:
     """Asynchronously index documents in the given state using the configured retriever.
 
@@ -102,7 +105,7 @@ async def index_docs(
 
 
 builder = StateGraph(
-    WebIndexState, input=UrlInputState, config_schema=IndexConfiguration
+    WebIndexerState, input=UrlInputState, config_schema=IndexerConfiguration
 )
 builder.add_node(index_docs)
 builder.add_node(load_web)

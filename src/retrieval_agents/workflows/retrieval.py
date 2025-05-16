@@ -6,16 +6,21 @@ vector store backends, specifically Elasticsearch, Pinecone, and MongoDB.
 The retrievers support filtering results by user_id to ensure data isolation between users.
 """
 
+from __future__ import annotations
+
 import os
 from contextlib import contextmanager
-from typing import Generator
+from typing import TYPE_CHECKING
 
-from langchain_core.embeddings import Embeddings
-from langchain_core.runnables import RunnableConfig
-from langchain_core.vectorstores import VectorStoreRetriever
+if TYPE_CHECKING:
+    from typing import Generator
 
-from retrieval_agents.agents.configurations import RagConfiguration
-from retrieval_agents.indexers.configurations import IndexConfiguration
+    from langchain_core.embeddings import Embeddings
+    from langchain_core.runnables import RunnableConfig
+    from langchain_core.vectorstores import VectorStoreRetriever
+
+    from .indexers import IndexerConfiguration
+    from .rag import SimpleRagConfiguration
 
 ## Encoder constructors
 
@@ -45,7 +50,7 @@ def make_text_encoder(model: str) -> Embeddings:
 
 @contextmanager
 def make_elastic_retriever(
-    configuration: IndexConfiguration, embedding_model: Embeddings
+    configuration: IndexerConfiguration, embedding_model: Embeddings
 ) -> Generator[VectorStoreRetriever, None, None]:
     """Configure this agent to connect to a specific elastic index."""
     from langchain_elasticsearch import ElasticsearchStore
@@ -76,7 +81,7 @@ def make_elastic_retriever(
 
 @contextmanager
 def make_pinecone_retriever(
-    configuration: IndexConfiguration, embedding_model: Embeddings
+    configuration: IndexerConfiguration, embedding_model: Embeddings
 ) -> Generator[VectorStoreRetriever, None, None]:
     """Configure this agent to connect to a specific pinecone index."""
     from langchain_pinecone import PineconeVectorStore
@@ -93,7 +98,7 @@ def make_pinecone_retriever(
 
 @contextmanager
 def make_mongodb_retriever(
-    configuration: IndexConfiguration, embedding_model: Embeddings
+    configuration: IndexerConfiguration, embedding_model: Embeddings
 ) -> Generator[VectorStoreRetriever, None, None]:
     """Configure this agent to connect to a specific MongoDB Atlas index & namespaces."""
     from langchain_mongodb.vectorstores import MongoDBAtlasVectorSearch
@@ -111,7 +116,7 @@ def make_mongodb_retriever(
 
 @contextmanager
 def make_chroma_retriever(
-    configuration: IndexConfiguration, embedding_model: Embeddings
+    configuration: IndexerConfiguration, embedding_model: Embeddings
 ) -> Generator[VectorStoreRetriever, None, None]:
     """Configure this agent to connect to a specific Chroma index."""
     from langchain_chroma import Chroma
@@ -132,7 +137,9 @@ def make_retriever(
     config: RunnableConfig,
 ) -> Generator[VectorStoreRetriever, None, None]:
     """Create a retriever for the agent, based on the current configuration."""
-    configuration = IndexConfiguration.from_runnable_config(config)
+    from .indexers import IndexerConfiguration
+
+    configuration = IndexerConfiguration.from_runnable_config(config)
     embedding_model = make_text_encoder(configuration.embedding_model)
     user_id = configuration.user_id
     if not user_id:
@@ -155,6 +162,6 @@ def make_retriever(
         case _:
             raise ValueError(
                 "Unrecognized retriever_provider in configuration. "
-                f"Expected one of: {', '.join(RagConfiguration.__annotations__['retriever_provider'].__args__)}\n"
+                f"Expected one of: {', '.join(SimpleRagConfiguration.__annotations__['retriever_provider'].__args__)}\n"
                 f"Got: {configuration.retriever_provider}"
             )
