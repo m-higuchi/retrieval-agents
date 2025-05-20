@@ -11,7 +11,8 @@ requires-python = ">=3.9,<3.13"
 dependencies = [
   "langgraph-cli[inmem] (>=0.2.8,<0.3.0)",
   "langgraph (>=0.4.3,<0.5.0)",
-  "langchain (>=0.3.25,<0.4.0)"
+  "langchain (>=0.3.25,<0.4.0)",
+  "langchain-community (>=0.3.24,<0.4.0)"
 ]
 
 [tool.poetry]
