@@ -39,4 +39,24 @@ COPY --from=builder /root/.docker/cli-plugins/docker-compose /root/.docker/cli-p
 COPY --from=builder /usr/local/bin/ollama /usr/local/bin/ollama
 COPY --from=builder /usr/bin/act /usr/bin/act
 
+FROM python:3.12-slim AS app
 
+WORKDIR /workspace
+
+ENV POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1 \
+    PATH="/opt/poetry/bin:$PATH"
+
+COPY --from=builder /opt/poetry /opt/poetry
+COPY --from=builder /usr/local/bin/ollama /usr/local/bin/ollama
+
+COPY pyproject.toml ./
+COPY poetry.lock ./
+COPY src ./src
+COPY langgraph.json ./
+COPY .env ./
+COPY README.md ./
+
+RUN poetry install --without dev
+CMD ["langgraph", "dev", "--host", "0.0.0.0", "--port", "2024"]
