@@ -3,8 +3,8 @@ version: '3.8'
 services:
   dev:
     build:
-      context: ..
-      dockerfile: .devcontainer/dev/Dockerfile
+      context: .
+      dockerfile: .devcontainer/Dockerfile
       target: dev
     deploy:
       resources:
@@ -14,13 +14,13 @@ services:
                 - gpu
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ..:/workspace
+      - .:/workspace
     command: sleep infinity
 
   app:
     build:
-      context: ..
-      dockerfile: .devcontainer/dev/Dockerfile
+      context: .
+      dockerfile: .devcontainer/Dockerfile
       target: app
     deploy:
       resources:
@@ -28,14 +28,13 @@ services:
           devices:
             - capabilities:
                 - gpu
-    ports:
-      - 3024:2024
     networks:
       - shared
   eval:
     build:
       context: .
-      dockerfile: eval/Dockerfile
+      dockerfile: .devcontainer/Dockerfile
+      target: dev
     deploy:
       resources:
         reservations:
@@ -43,7 +42,19 @@ services:
             - capabilities:
                 - gpu
     volumes:
-      - ../evaluation:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./evaluation:/workspace
+    command: sleep infinity
+    networks:
+      - shared
+    depends_on:
+      - app
+  crag:
+    build:
+      context: ./evaluation/CRAG
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./evaluation/CRAG:/workspace
     command: sleep infinity
     networks:
       - shared
