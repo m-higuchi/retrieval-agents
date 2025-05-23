@@ -4,7 +4,7 @@ services:
   dev:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: ./Dockerfile
       target: dev
     deploy:
       resources:
@@ -17,11 +17,11 @@ services:
       - .:/workspace
     command: sleep infinity
 
-  app:
+  api:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
-      target: app
+      dockerfile: ./Dockerfile
+      target: api
     deploy:
       resources:
         reservations:
@@ -30,10 +30,11 @@ services:
                 - gpu
     networks:
       - shared
+
   eval:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: ./Dockerfile
       target: dev
     deploy:
       resources:
@@ -48,7 +49,8 @@ services:
     networks:
       - shared
     depends_on:
-      - app
+      - api
+
   crag:
     build:
       context: ./evaluation/CRAG
@@ -59,6 +61,21 @@ services:
     networks:
       - shared
     depends_on:
-      - app
+      - api
+
+  niah:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: niah
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./evaluation/NIAH:/workspace
+    command: sleep infinity
+    depends_on:
+      - api
+    networks:
+      - shared
+
 networks:
   shared:

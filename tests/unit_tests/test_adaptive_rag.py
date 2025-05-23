@@ -5,7 +5,7 @@ from langchain_core.documents import Document
 from pytest import fixture, mark
 
 from retrieval_agents import RunnableConfig
-from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph import (
+from retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph import (
     _grade_generation_v_docuemnts_and_question_answer,
     _grade_generation_v_documents_and_question_hallucination,
     decide_to_generate,
@@ -17,7 +17,7 @@ from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph import (
     transform_query,
     web_search,
 )
-from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_state import (
+from retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_state import (
     AdaptiveRagState,
 )
 
@@ -43,7 +43,7 @@ def mock_chat_model() -> MagicMock:
 ### Nodes ###
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.retrieval.make_retriever"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.retrieval.make_retriever"
 )
 async def test_retrieve(
     mock_make_retriever: MagicMock, runnable_config: RunnableConfig
@@ -60,11 +60,9 @@ async def test_retrieve(
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
 )
-@patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
-)
+@patch("retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.load_chat_model")
 async def test_grade_documents(
     mock_load_chat_model: MagicMock,
     mock_prompt_cls: MagicMock,
@@ -107,11 +105,9 @@ async def test_grade_documents(
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
 )
-@patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
-)
+@patch("retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.load_chat_model")
 async def test_generate(
     mock_load_chat_model: MagicMock,
     mock_prompt_cls: MagicMock,
@@ -158,11 +154,9 @@ async def test_web_search(
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
 )
-@patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
-)
+@patch("retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.load_chat_model")
 async def test_transform_query(
     mock_load_chat_model: MagicMock,
     mock_prompt_cls: MagicMock,
@@ -188,11 +182,9 @@ async def test_transform_query(
 ### Edges ###
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
 )
-@patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model"
-)
+@patch("retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.load_chat_model")
 @mark.parametrize(
     "relevance, expected",
     [("vectorstore", "vectorstore"), ("web_search", "web_search")],
@@ -243,11 +235,11 @@ async def test_decide_to_generate(documents: list[Document], expected: str) -> N
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph._grade_generation_v_documents_and_question_hallucination",
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph._grade_generation_v_documents_and_question_hallucination",
     new_callable=AsyncMock,
 )
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph._grade_generation_v_docuemnts_and_question_answer",
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph._grade_generation_v_docuemnts_and_question_answer",
     new_callable=AsyncMock,
 )
 @mark.parametrize(
@@ -288,10 +280,10 @@ async def test_grade_generation_v_documents_and_question(
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
 )
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model",
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.load_chat_model",
     return_value=MagicMock(),
 )
 @mark.parametrize("binary_score, expected", [("yes", True), ("No", False)])
@@ -327,10 +319,10 @@ async def test_grade_generation_v_documents_and_question_hallucination(
 
 @mark.asyncio
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.ChatPromptTemplate"
 )
 @patch(
-    "retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_graph.load_chat_model",
+    "retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_graph.load_chat_model",
     return_value=MagicMock(),
 )
 @mark.parametrize("binary_score, expected", [("yes", True), ("no", False)])

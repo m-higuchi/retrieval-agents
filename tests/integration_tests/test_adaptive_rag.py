@@ -6,8 +6,8 @@ from langchain_core.documents import Document
 from pytest import FixtureRequest, fixture, mark
 
 from retrieval_agents import RunnableConfig
-from retrieval_agents.workflows.rag._adaptive_rag import adaptive_rag_graph
-from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_state import (
+from retrieval_agents.modules.rag._adaptive_rag import adaptive_rag_graph
+from retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_state import (
     AdaptiveRagState,
 )
 
