@@ -5,7 +5,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     docker.io \
+    locales \
     && rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 RUN mkdir -p /root/.docker/cli-plugins \
     && curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /root/.docker/cli-plugins/docker-compose \
@@ -21,9 +24,19 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/nektos/act/master/install.sh | bash
 
+##################################################### base #####################################################
+FROM python:3.12-slim AS base
+
+COPY --from=builder /etc/locale.gen /etc/locale.gen
+COPY --from=builder /etc/default/locale /etc/default/locale
+COPY --from=builder /usr/lib/locale /usr/lib/locale
+
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 ##################################################### dev #####################################################
-FROM python:3.12-slim AS dev
+FROM base AS dev
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
@@ -43,7 +56,7 @@ COPY --from=builder /usr/local/bin/ollama /usr/local/bin/ollama
 COPY --from=builder /usr/bin/act /usr/bin/act
 
 ##################################################### api #####################################################
-FROM python:3.12-slim AS api
+FROM base AS api
 
 WORKDIR /workspace
 
@@ -67,7 +80,7 @@ CMD ["langgraph", "dev", "--host", "0.0.0.0", "--port", "2024"]
 
 
 ##################################################### niah #####################################################
-FROM python:3.11-slim AS niah
+FROM base AS niah
 
 WORKDIR /workspace
 
