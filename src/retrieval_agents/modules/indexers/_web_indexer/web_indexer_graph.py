@@ -9,8 +9,8 @@ from langchain_core.runnables import RunnableConfig
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import END, START, StateGraph
 
-from retrieval_agents.workflows import IndexerConfiguration, retrieval
-from retrieval_agents.workflows.indexers._web_indexer.web_indexer_state import (
+from retrieval_agents.modules import IndexerConfiguration, retrieval
+from retrieval_agents.modules.indexers._web_indexer.web_indexer_state import (
     UrlInputState,
     WebIndexerState,
 )

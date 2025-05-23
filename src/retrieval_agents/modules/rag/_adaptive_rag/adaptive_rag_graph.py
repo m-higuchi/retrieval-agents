@@ -11,15 +11,15 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel, Field
 
-from retrieval_agents.workflows import retrieval
-from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_configuration import (
+from retrieval_agents.modules import retrieval
+from retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_configuration import (
     AdaptiveRagConfiguration,
 )
-from retrieval_agents.workflows.rag._adaptive_rag.adaptive_rag_state import (
+from retrieval_agents.modules.rag._adaptive_rag.adaptive_rag_state import (
     AdaptiveRagInputState,
     AdaptiveRagState,
 )
-from retrieval_agents.workflows.utils import load_chat_model
+from retrieval_agents.modules.utils import load_chat_model
 
 logger = logging.getLogger("adaptive_rag_graph")
 

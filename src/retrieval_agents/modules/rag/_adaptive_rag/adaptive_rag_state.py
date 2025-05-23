@@ -25,7 +25,7 @@ from typing import Annotated, Sequence
 from langchain_core.documents import Document
 from pydantic import BaseModel, Field
 
-from retrieval_agents.workflows.indexers._document_indexer.document_indexer_state import (
+from retrieval_agents.modules.indexers._document_indexer.document_indexer_state import (
     reduce_docs,
 )
 

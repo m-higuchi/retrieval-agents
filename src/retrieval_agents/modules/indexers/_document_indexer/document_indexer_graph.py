@@ -6,11 +6,11 @@ from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 
-from retrieval_agents.workflows import IndexerConfiguration
-from retrieval_agents.workflows.indexers._document_indexer.document_indexer_state import (
+from retrieval_agents.modules import IndexerConfiguration
+from retrieval_agents.modules.indexers._document_indexer.document_indexer_state import (
     DocumentIndexerState,
 )
-from retrieval_agents.workflows.retrieval import make_retriever
+from retrieval_agents.modules.retrieval import make_retriever
 
 
 def ensure_docs_have_user_id(

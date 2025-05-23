@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Annotated
 
-from retrieval_agents.workflows.configurations import IndexerConfiguration
-from retrieval_agents.workflows.rag import prompts
+from retrieval_agents.modules.configurations import IndexerConfiguration
+from retrieval_agents.modules.rag import prompts
 
 
 @dataclass(kw_only=True)

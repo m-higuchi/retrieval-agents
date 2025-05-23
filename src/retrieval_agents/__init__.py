@@ -2,7 +2,7 @@
 
 from langchain_core.runnables import RunnableConfig
 
-from .workflows import (
+from .modules import (
     AdaptiveRagConfiguration,
     AdaptiveRagInputState,
     DocumentIndexerState,

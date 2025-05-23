@@ -16,15 +16,15 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel
 
-from retrieval_agents.workflows import retrieval
-from retrieval_agents.workflows.rag._simple_rag.simple_rag_configuration import (
+from retrieval_agents.modules import retrieval
+from retrieval_agents.modules.rag._simple_rag.simple_rag_configuration import (
     SimpleRagConfiguration,
 )
-from retrieval_agents.workflows.rag._simple_rag.simple_rag_state import (
+from retrieval_agents.modules.rag._simple_rag.simple_rag_state import (
     SimpleRagInputState,
     SimpleRagState,
 )
-from retrieval_agents.workflows.utils import (
+from retrieval_agents.modules.utils import (
     format_docs,
     get_message_text,
     load_chat_model,
