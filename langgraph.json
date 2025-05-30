@@ -1,10 +1,11 @@
 {
   "dependencies": ["."],
   "graphs": {
-    "indexer": "./src/retrieval_agents/workflows/indexers/_document_indexer/document_indexer_graph.py:graph",
-    "web_indexer": "./src/retrieval_agents/workflows/indexers/_web_indexer/web_indexer_graph.py:graph",
-    "simple_rag": "./src/retrieval_agents/workflows/rag/_simple_rag/simple_rag_graph.py:graph",
-    "adaptive_rag_graph": "./src/retrieval_agents/workflows/rag/_adaptive_rag/adaptive_rag_graph.py:graph"
+    "document_indexer": "./src/retrieval_agents/modules/document_indexer.py:graph",
+    "web_indexer": "./src/retrieval_agents/modules/web_indexer.py:graph",
+    "simple_rag": "./src/retrieval_agents/modules/simple_rag.py:graph",
+    "contextual_answer_generator": "./src/retrieval_agents/modules/contextual_answer_generator.py:graph",
+    "adaptive_rag": "./src/retrieval_agents/modules/adaptive_rag.py:graph"
   },
   "env": ".env"
 }

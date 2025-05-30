@@ -7,38 +7,125 @@ relevant documents, and formulating responses.
 """
 
 from datetime import datetime, timezone
-from typing import cast
+from typing import Annotated, Sequence, cast
 
 from langchain_core.documents import Document
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import AnyMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph import END, START, StateGraph
-from pydantic import BaseModel
+from langgraph.graph import END, START, StateGraph, add_messages
+from pydantic import BaseModel, Field
 
+from retrieval_agents import prompts
+from retrieval_agents.configurations import IndexerConfiguration
 from retrieval_agents.modules import retrieval
-from retrieval_agents.modules.rag._simple_rag.simple_rag_configuration import (
-    SimpleRagConfiguration,
-)
-from retrieval_agents.modules.rag._simple_rag.simple_rag_state import (
-    SimpleRagInputState,
-    SimpleRagState,
-)
 from retrieval_agents.modules.utils import (
     format_docs,
     get_message_text,
     load_chat_model,
 )
 
-# Define the function that calls the model
 
-
+### Schemas ###
 class SearchQuery(BaseModel):
     """Search the indexed documents for a query."""
 
     query: str
 
 
+### Configuration ###
+class SimpleRagConfiguration(IndexerConfiguration):
+    """The configuration for the agent."""
+
+    response_system_prompt: str = Field(
+        default=prompts.RESPONSE_SYSTEM_PROMPT,
+        description="The system prompt used for generating responses.",
+    )
+
+    response_model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = Field(
+        default="openai/gpt-4o",
+        description="The language model used for generating responses. Should be in the form: provider/model-name.",
+    )
+
+    query_system_prompt: str = Field(
+        default=prompts.QUERY_SYSTEM_PROMPT,
+        description="The system prompt used for processing and refining queries.",
+    )
+
+    query_model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = Field(
+        default="openai/gpt-4o",
+        description="The language model used for processing and refining queries. Should be in the form: provider/model-name.",
+    )
+
+
+### States ###
+class SimpleRagInputState(BaseModel):
+    """Represents the input state for the agent.
+
+    This class defines the structure of the input state, which includes
+    the messages exchanged between the user and the agent. It serves as
+    a restricted version of the full State, providing a narrower interface
+    to the outside world compared to what is maintained internally.
+    """
+
+    messages: Annotated[Sequence[AnyMessage], add_messages]
+    """Messages track the primary execution state of the agent.
+
+    Typically accumulates a pattern of Human/AI/Human/AI messages; if
+    you were to combine this template with a tool-calling ReAct agent pattern,
+    it may look like this:
+
+    1. HumanMessage - user input
+    2. AIMessage with .tool_calls - agent picking tool(s) to use to collect
+         information
+    3. ToolMessage(s) - the responses (or errors) from the executed tools
+    
+        (... repeat steps 2 and 3 as needed ...)
+    4. AIMessage without .tool_calls - agent responding in unstructured
+        format to the user.
+
+    5. HumanMessage - user responds with the next conversational turn.
+
+        (... repeat steps 2-5 as needed ... )
+    
+    Merges two lists of messages, updating existing messages by ID.
+
+    By default, this ensures the state is "append-only", unless the
+    new message has the same ID as an existing message.
+
+    Returns:
+        A new list of messages with the messages from `right` merged into `left`.
+        If a message in `right` has the same ID as a message in `left`, the
+        message from `right` will replace the message from `left`."""
+
+
+# This is the primary state of your agent, where you can store any information
+
+
+def add_queries(existing: Sequence[str], new: Sequence[str]) -> Sequence[str]:
+    """Combine existing queries with new queries.
+
+    Args:
+        existing (Sequence[str]): The current list of queries in the state.
+        new (Sequence[str]): The new queries to be added.
+
+    Returns:
+        Sequence[str]: A new list containing all queries from both input sequences.
+    """
+    return list(existing) + list(new)
+
+
+class SimpleRagState(SimpleRagInputState):
+    """The state of your graph / agent."""
+
+    queries: Annotated[list[str], add_queries] = Field(default_factory=list)
+    """A list of search queries that the agent has generated."""
+
+    retrieved_docs: list[Document] = Field(default_factory=list)
+    """Populated by the retriever. This is a list of documents that the agent can reference."""
+
+
+### Nodes ###
 async def generate_query(
     state: SimpleRagState, *, config: RunnableConfig
 ) -> dict[str, list[str]]:
@@ -142,9 +229,7 @@ async def respond(
     return {"messages": [response]}
 
 
-# Define a new graph (It's just a pipe)
-
-
+### Graph ###
 builder = StateGraph(
     SimpleRagState, input=SimpleRagInputState, config_schema=SimpleRagConfiguration
 )

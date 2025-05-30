@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from retrieval_agents.modules import IndexerConfiguration
 
-    from .rag import SimpleRagConfiguration
+    from .simple_rag import SimpleRagConfiguration
 
 ## Encoder constructors
 
