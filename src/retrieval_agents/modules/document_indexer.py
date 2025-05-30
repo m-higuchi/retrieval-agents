@@ -1,16 +1,28 @@
 """This "graph" simply exposes an endpoint for a user to upload docs to be indexed."""
 
-from typing import Optional, Sequence
+from typing import Annotated, Optional, Sequence
 
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph import END, START, StateGraph
+from langgraph.graph import StateGraph
+from pydantic import BaseModel
 
-from retrieval_agents.modules import IndexerConfiguration
-from retrieval_agents.modules.indexers._document_indexer.document_indexer_state import (
-    DocumentIndexerState,
-)
+from retrieval_agents.configurations import IndexerConfiguration
 from retrieval_agents.modules.retrieval import make_retriever
+from retrieval_agents.modules.utils import reduce_docs
+
+
+### States ###
+class DocumentIndexerState(BaseModel):
+    """Represents the state for document indexing and retrieval.
+
+    This class defines the structure of the index state, which includes
+    the documents to be indexed and the retriever used for searching
+    these documents.
+    """
+
+    docs: Annotated[Sequence[Document], reduce_docs]
+    """A list of documents that the agent can index."""
 
 
 def ensure_docs_have_user_id(
@@ -34,6 +46,7 @@ def ensure_docs_have_user_id(
     ]
 
 
+### Nodes ###
 async def index_docs(
     state: DocumentIndexerState, *, config: Optional[RunnableConfig] = None
 ) -> dict[str, str]:
@@ -57,14 +70,11 @@ async def index_docs(
     return {"docs": "delete"}
 
 
-# Define a new graph
-
-
+### Graph ###
 builder = StateGraph(DocumentIndexerState, config_schema=IndexerConfiguration)
 builder.add_node(index_docs)
-builder.add_edge(START, "index_docs")
-builder.add_edge("index_docs", END)
-# Finally, we compile it!
-# This compiles it into a graph you can invoke and deploy.
+builder.set_entry_point("index_docs")
+builder.set_finish_point("index_docs")
+
 graph = builder.compile()
 graph.name = "DocumentIndexer"

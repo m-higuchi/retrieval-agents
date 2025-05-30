@@ -1,21 +1,32 @@
 """This "graph" exposes an endpoint for a user to upload URLs to be indexed."""
 
 import logging
-from typing import Optional, Sequence
+from typing import Annotated, Optional, Sequence
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import END, START, StateGraph
+from pydantic import BaseModel
 
 from retrieval_agents.modules import IndexerConfiguration, retrieval
-from retrieval_agents.modules.indexers._web_indexer.web_indexer_state import (
-    UrlInputState,
-    WebIndexerState,
-)
+from retrieval_agents.modules.utils import reduce_docs, reduce_strs
 
 logger = logging.getLogger("web_indexer")
+
+
+### States ###
+class UrlInputState(BaseModel):
+    """Input state for web indexer."""
+
+    urls: Annotated[Sequence[str], reduce_strs]
+
+
+class WebIndexerState(UrlInputState):
+    """The State of web indexer."""
+
+    docs: Annotated[Sequence[Document], reduce_docs]
 
 
 def ensure_docs_have_user_id(
@@ -100,9 +111,7 @@ async def index_docs(
     return {"docs": "delete"}
 
 
-# Define a new graph
-
-
+### Graph ###
 builder = StateGraph(
     WebIndexerState, input=UrlInputState, config_schema=IndexerConfiguration
 )

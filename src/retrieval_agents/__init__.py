@@ -4,13 +4,15 @@ from langchain_core.runnables import RunnableConfig
 
 from .modules import (
     AdaptiveRagConfiguration,
-    AdaptiveRagInputState,
+    ContextualAnswerGeneratorConfiguration,
+    ContextualAnswerGeneratorInputState,
     DocumentIndexerState,
     IndexerConfiguration,
     SimpleRagConfiguration,
     SimpleRagInputState,
     UrlInputState,
     adaptive_rag,
+    contextual_answer_generator,
     document_indexer,
     simple_rag,
     web_indexer,
@@ -18,11 +20,13 @@ from .modules import (
 
 __all__ = [
     "adaptive_rag",
+    "contextual_answer_generator",
     "document_indexer",
     "simple_rag",
     "SimpleRagConfiguration",
     "SimpleRagInputState",
-    "AdaptiveRagInputState",
+    "ContextualAnswerGeneratorConfiguration",
+    "ContextualAnswerGeneratorInputState",
     "AdaptiveRagConfiguration",
     "RunnableConfig",
     "indexer",
