@@ -42,6 +42,10 @@ def make_text_encoder(model: str) -> Embeddings:
             from langchain_nomic import NomicEmbeddings
 
             return NomicEmbeddings(model=model, inference_mode="local")
+        case "voyageai":
+            from langchain_voyageai import VoyageAIEmbeddings
+
+            return VoyageAIEmbeddings(model=model)  # type: ignore[call-arg]
         case _:
             raise ValueError(f"Unsupported embedding provider: {provider}")
 
