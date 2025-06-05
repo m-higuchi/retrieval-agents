@@ -43,9 +43,6 @@ class IndexerConfiguration(ConfigurationBase):
         description="Name of the embedding model to use. Must be a valid embedding model name.",
     )
 
-    index_name: str | None = Field(
-        default=None, description="The name of index to retrieve."
-    )
     retriever_provider: Annotated[
         Literal["elastic", "elastic-local", "pinecone", "mongodb", "chroma"],
         {"__template_metadata__": {"kind": "retriever"}},
