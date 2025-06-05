@@ -73,7 +73,7 @@ def make_elastic_retriever(
     vstore = ElasticsearchStore(
         **connection_options,  # type: ignore
         es_url=os.environ["ELASTICSEARCH_URL"],
-        index_name=os.environ["ELASTICSEARCH_INDEX_NAME"],
+        index_name=configuration.embedding_model.lower().replace("/", "_"),
         embedding=embedding_model,
     )
 
@@ -96,7 +96,10 @@ def make_pinecone_retriever(
     search_filter = search_kwargs.setdefault("filter", {})
     search_filter.update({"user_id": configuration.user_id})
     vstore = PineconeVectorStore.from_existing_index(
-        os.environ["PINECONE_INDEX_NAME"], embedding=embedding_model
+        index_name=configuration.embedding_model.lower()
+        .replace(".", "-")
+        .replace("/", "-"),
+        embedding=embedding_model,
     )
     yield vstore.as_retriever(search_kwargs=search_kwargs)
 
@@ -110,7 +113,7 @@ def make_mongodb_retriever(
 
     vstore = MongoDBAtlasVectorSearch.from_connection_string(
         os.environ["MONGODB_URI"],
-        namespace=os.environ["MONGODB_NAMESPACE"],
+        namespace=configuration.embedding_model.lower().replace("/", "_"),
         embedding=embedding_model,
     )
     search_kwargs = configuration.search_kwargs
@@ -127,7 +130,7 @@ def make_chroma_retriever(
     from langchain_chroma import Chroma
 
     vstore = Chroma(
-        collection_name=os.environ["CHROMA_COLLECTION_NAME"],
+        collection_name=configuration.embedding_model.lower().replace("/", "_"),
         embedding_function=embedding_model,
         persist_directory=os.environ["CHROMA_DIR"],
     )
